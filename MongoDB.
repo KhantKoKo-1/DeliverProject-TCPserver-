@@ -1,0 +1,24 @@
+#drop Database
+#csv file update
+from pymongo import MongoClient
+try :
+
+    client  = MongoClient("localhost",27017 )
+    database = client['test-database']
+    collection = database['test-collection']
+    print("connection success")
+    myquery = {"CEPQ":"S2GA"}
+    newdoc  = {"$set":{"CEPQ":"S3GG"}}
+except Exception as error:
+    print(error)
+
+try :
+    collection.update_one(myquery,newdoc)
+    print("Update success")
+   
+    # collection.drop()  #for drop
+    # print("Drop succcessful")
+
+
+except Exception as error:
+    print(error)
