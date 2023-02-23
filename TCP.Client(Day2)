@@ -1,0 +1,46 @@
+import socket
+import deliverypj
+
+
+class Client:
+    def __init__(self, client_sms):
+        self.target_host = 'localhost'
+        self.target_port = 9999
+        # self.ClientMessage = bytes(client_sms)
+        self.ClientMessage = bytes(client_sms, 'utf-8')
+
+
+    def runClient(self):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((self.target_host, self.target_port))
+
+        client.send(self.ClientMessage)
+
+        recvFromServer = client.recv(4096).decode("utf-8")
+
+        print(f'Back received from server: {recvFromServer}')
+        client.close()
+
+    def _option(self):
+        print("press 1 : show menu")
+        print("press 2 : create account")
+        print("press 3 : Sign in account")
+        option = input("Enter option : ")
+        print(type(option))
+        return option
+
+    def main(self):
+        Clientsms = self._option()
+        print(type(Clientsms))
+        tcpClient = Client(Clientsms)
+        tcpClient.runClient()
+
+if __name__ == "__main__":
+    while True:
+
+        # Clientsms = input("Enter data to send>:")
+        # print(type(Clientsms))
+        tcpClient = Client('h')
+        tcpClient.main()
+        
+
