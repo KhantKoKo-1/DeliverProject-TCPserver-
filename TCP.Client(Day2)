@@ -2,6 +2,7 @@ import socket
 import deliverypj
 
 
+
 class Client:
     def __init__(self, client_sms):
         self.target_host = 'localhost'
@@ -17,20 +18,24 @@ class Client:
         client.send(self.ClientMessage)
 
         recvFromServer = client.recv(4096).decode("utf-8")
+        splitData =recvFromServer.split("$")
+        listL = []
+        for d in splitData:
+           d=input(d)
+           listL.append(d)
+        print(listL)
+        mystr = '$'.join(map(str, listL))
+        gotoserver = bytes(mystr, 'utf8')
+        client.send(gotoserver)
 
-        print(f'Back received from server: {recvFromServer}')
+
+        #print(f'Back received from server:\n{recvFromServer}')
         client.close()
 
-    def _option(self):
-        print("press 1 : show menu")
-        print("press 2 : create account")
-        print("press 3 : Sign in account")
-        option = input("Enter option : ")
-        print(type(option))
-        return option
+
 
     def main(self):
-        Clientsms = self._option()
+        Clientsms = deliverypj._option()
         print(type(Clientsms))
         tcpClient = Client(Clientsms)
         tcpClient.runClient()
@@ -42,5 +47,5 @@ if __name__ == "__main__":
         # print(type(Clientsms))
         tcpClient = Client('h')
         tcpClient.main()
-        
+
 
