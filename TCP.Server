@@ -1,0 +1,118 @@
+import socket
+import threading
+from Mongon_DB import mongodatabase
+
+
+class TCPserver():
+
+    def __init__(self, ip, port):
+        self.server_ip = ip
+        self.server_port = port
+
+    def Server(self):
+        # creating server
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((self.server_ip, self.server_port))
+        # start listening from server
+        server.listen(5)
+        print(f'Server is listening on {self.server_ip} : {self.server_port}')
+
+        while True:
+            # connection accept
+            client, address = server.accept()
+            print(f'Accepted connection from {address}:')
+
+            # transmit data and recive
+            client_handler = threading.Thread(target=self.handle_client, args=(client,))
+            client_handler.start()
+
+    def handle_client(self, client_socket):
+
+        with client_socket as sock:
+            while True:
+                receive_data = sock.recv(1024)
+
+                data = receive_data.decode("utf-8")
+
+                print("receivedata", data)
+
+                if data == '1':
+                    obj = mongodatabase()
+                    tosend = obj.showmenu()
+
+                    sock.send(tosend.encode())
+
+                elif data == '2':
+
+                    obj = mongodatabase()
+                    tosend_1 = obj.sign_up_account()
+                    sock.send(tosend_1.encode())
+
+                    r_data = sock.recv(1024).decode('utf-8')
+                    print('receiveData-2:', r_data)
+                    split_data = r_data.split("$")
+                    print(split_data)
+                    key = split_data[1]
+
+                    try:
+                        int_data = int(key)
+                        print(int_data)
+                        return_Data = obj.ph_count_checking(int_data)
+
+                        if return_Data:
+                            returnFromDB = obj.check_Phnumber(key)
+                            if not returnFromDB:  # is false
+                                result_pass = obj.check_comfirm_password(split_data)
+                                if result_pass:
+
+                                    obj.addData(split_data)
+                                    send = obj.for_send_option()
+                                    sock.send(send.encode())
+                                else:
+                                    print("Wrong PassWord")
+
+
+                            else:
+
+                                print("Your PhNumber is already exist")
+
+
+                        else:
+                            print('Wrong Ph_Number')
+
+                    except ValueError:
+                        print('Wrong Ph_Number')
+
+                    sock.send(send.encode())
+
+                elif data == '3':
+                    obj = mongodatabase()
+                    sendsms = obj.sign_in_account()
+                    sock.send(sendsms.encode())
+                    rev_data = sock.recv(1024).decode('utf-8')
+                    print('receiveData-3 :', rev_data)
+                    split_data = rev_data.split("$")
+                    print(split_data)
+
+                    dataFromMongo = obj.check_Phnumber(split_data[0])
+                    print('receive Ph', dataFromMongo)
+
+                    if not dataFromMongo:
+                        pass
+                    else:
+                        dataFromMongo_1 = obj.checking_password(dataFromMongo, split_data[1])
+                        print('receive pass', dataFromMongo_1)
+                        if dataFromMongo_1:
+                            sendToClient = obj.showmenu()
+                            sock.send(sendToClient.encode())
+                            break
+                        else:
+                            print('false')
+
+
+if __name__ == "__main__":
+    server_ip = 'localhost'
+    server_port = 9999
+
+    tcpServer = TCPserver(server_ip, server_port)
+    tcpServer.Server()
