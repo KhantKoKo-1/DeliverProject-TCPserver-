@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 
+
 class mongodatabase:
     try:
 
@@ -14,61 +15,134 @@ class mongodatabase:
         print(error)
 
     def __init__(self):
-        data = [
-            {"_id": 1, "Shop Name": "Tea shop",
-             "food": ["fired green", "Thai soup", "squid salad", "fry chicken", "Malasamkaw"],
-             "drink": ["Tea", "Coffee", "LEMON Juice"]},
-            {"_id": 2, "Shop Name": "Pan Ei", "food": ["Bread", "Cake", "Fried Rice(Chicken)"],
-             "drink": ["orange juice", "Tea"]},
-            {"_id": 3, "Shop Name": "FuDo Barkery", "food": ["Burger", "Chocolate Cake"],
-             "drink": ["AVOCADO JUICE", "stawBarry JUICE"]},
-            {"_id": 4, "Shop Name": "Shwe Lu Lu", "food": ["Shan Nodel", "fired rice", "Tongyang soup"],
-             "drink": ["lemon", "Lemon tea"]},
-            {"_id": 5, "Shop Name": "Pyae phyo", "food": ['Kimar plata', 'Irak kwe'],
-             "drink": ["Silong Tea", "Coffee"]},
-
-        ]
-
+        # data = [
+        #     {"_id": 1, "Shop Name": "Tea shop",
+        #      "food": ["sandwich-2500", "Thai soup-2200-Tea shop", "Potato Marlar-2500", "fry chicken-2200-Tea shop",
+        #               "Malasamkaw-5000-Tea shop"],
+        #      "drink": ["Tea-500-Tea shop", "Coffee-500", "LEMON Juice-500"]},
+        #     {"_id": 2, "Shop Name": "Pan Ei", "food": ["Bread-2000", "Cake-8000 ", "Fried Rice(Chicken)-3000"],
+        #      "drink": ["orange juice-1000", "Tea-500"]},
+        #     {"_id": 3, "Shop Name": "FuDo Barkery", "food": ["Burgar-2000", "Chocolate Cake-3500"],
+        #      "drink": ["AVOCADO JUICE-1500", "StawBarry JUICE-1500"]},
+        #     {"_id": 4, "Shop Name": "Shwe Lu Lu", "food": ["Shan Noodle-1500", "fired rice-2500", "Tongyang soup-2000"],
+        #      "drink": ["lemon juice =2000", "Lemon tea =800"]},
+        #     {"_id": 5, "Shop Name": "Pyae phyo", "food": ['Kimar plata-2500', 'Irak kwe-300'],
+        #      "drink": ["Silong Tea-1000", "Coffee-500"]},
+        #
+        # ]
         data_1 = [
-            {'_id': 1, 'User_Name': 'Khant Ko Ko', 'Password': 'khant123', 'Phone': 959123456789, 'Gmail': 'khantkoko123@gmail.com'},
-            {'_id': 2, 'User_Name': 'SiThu', 'Password': 'SiThu123', 'Phone': 959532145671, 'Gmail': 'SiThu123@gmail.com'},
-            {'_id': 3, 'User_Name': 'Aung Kaung Sett', 'Password': 'Aung123', 'Phone': 959556677889, 'Gmail': 'AungKaung123@gmail.com'},
-            {'_id': 4, 'User_Name': 'Tha Zin Naing', 'Password': 'Thazin345', 'Phone': 959987654321, 'Gmail': 'Thazin3456@gmail.com'},
+            {"_id": 1, "Menu": "Chicken", "Shop Name": ["Teashop", "PanEi"]},
+            {"_id": 2, "Menu": "Sea Food", "Shop Name": ["Shwe Lu Lu", "Myat"]},
+            {"_id": 3, "Menu": "Korea Food", "Shop Name": ["KPop", "K-Noodle"]},
+            {"_id": 4, "Menu": "China Food", "Shop Name": ["Shwe Nay Chi", "PaPa"]},
+            {"_id": 4, "Menu": "Asia Food", "Shop Name": ["Pyae phyo", "PanEi"]},
 
         ]
-        try:
-            #self.collection_1.insert_many(data_1)
-            print("insert successful")
-        except Exception as error:
-            print(error)
+
+        data_2 = [
+            {'_id': 1, 'User_Name': 'Khant Ko Ko', 'Phone': '959123456789', 'Password': 'khant123'},
+            {'_id': 2, 'User_Name': 'SiThu', 'Phone': '959532145671', 'Password': 'SiThu123'},
+            {'_id': 3, 'User_Name': 'Aung Kaung Sett', 'Phone': '959556677889', 'Password': 'Aung123'},
+            {'_id': 4, 'User_Name': 'Tha Zin Naing', 'Phone': '959987654321', 'Password': 'Thazin345'},
+
+        ]
+        # try:
+        #      self.collection.insert_many(data_1)
+        #     # self.collection_1.insert_many(data_1)
+        #     print("insert successful")
+        # except Exception as error:
+        #     print(error)
 
     def showmenu(self):
 
-        find = self.collection.find({}, {'Shop Name': 1, '_id': 0})
-        find_1 = self.collection_1.find().distinct('Phone')
-        for data in find_1:
-            print(data)
-            print(type(data))
+        find = self.collection.find({}, {'Menu': 1, '_id': 0})
+        # find_1 = self.collection.find({}, {'food'[0]: 1})
+        # find_2 = self.collection.find_one()
+
+
         menu_str = '\n'.join(map(str, find))
+        t = '\nhelloWelcome'
+        menu_str +=t
+        print(menu_str)
         return menu_str
 
-    def addData(self, r_data):
+    def check_Phnumber(self, receive_data):
+        find_ph = self.collection_1.find().distinct('Phone')
+        print(find_ph)
+        key = '959'
+        add_key = key + receive_data
+        print(add_key)
+        for data in find_ph:
+            if data == add_key:
+                return data
+            else:
+                print("False")
+        return False
+
+    def checking_password(self, phFromserver, passFromServer):
+        ph = {"Phone" : phFromserver}
+        find = self.collection_1.find_one(ph)
+        pass_1 = find.get('Password')
+
+        if pass_1 == passFromServer:
+            print('True')
+            return True
+        else:
+            print('false')
+            return False
+
+
+
+
+    def addData(self, add_list_data):
+
         order = self.client['Delivery_database']['user-collection']
         count = order.count_documents({}) + 1
         print(count)
-        splitData = r_data.split('$')
+        var = '959'
+        data = var + add_list_data[1]
+        add_list_data[1] = data
 
-        print(splitData)
-        splitData.insert(0, count)
-        print(splitData)
-        list2 = ['_id', 'User_Name', 'Password', 'Phone']
-        d1 = zip(list2, splitData)
-        print(d1)
+        add_list_data.insert(0, count)
+        list2 = ['_id', 'User_Name', 'Phone', 'Password']
+        d1 = zip(list2, add_list_data)
         dic_data = dict(d1)
         print(dic_data)
         self.collection_1.insert_one(dic_data)
+        print("insert successful")
+
+    def ph_count_checking(self, int_Data):
+
+        count = len(str(int_Data))
+        if count == 9:
+            return True
+        else:
+            return False
+
+    def check_comfirm_password(self, list_data):
+
+        if list_data[-2] == list_data[-1]:
+            return True
+        else:
+            return False
+
+    def sign_up_account(self):
+
+        user = "input$Enter UserName:$Enter Ph_Number:$Enter Password:$Enter Confirm password:"
+
+        return user
+
+    def sign_in_account(self):
+
+        client = "input$Enter Ph_Number$Enter Password:"
+        return client
+
+    def for_send_option(self):
+        option = "input$press 1 : show menu\npress 2 : create account\npress 3 : Sign in account\nEnter option : "
+        return option
+
 
 if __name__ == "__main__":
     obj = mongodatabase()
-    fo = obj.test()
+    # obj.showmenu()
 
