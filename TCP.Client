@@ -1,0 +1,60 @@
+import socket
+from deliverypj import For_cilent
+
+
+class Client:
+    def __init__(self, client_sms):
+        self.target_host = 'localhost'
+        self.target_port = 9999
+        # self.ClientMessage = bytes(client_sms)
+        self.ClientMessage = bytes(client_sms, 'utf-8')
+
+    def runClient(self):
+
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((self.target_host, self.target_port))
+
+        g = client.send(self.ClientMessage)
+        print('g', type(g))
+        while True:
+            recvFromServer = client.recv(4096).decode("utf-8")
+
+            splitData = recvFromServer.split("$")
+
+            if splitData[0] == 'input':
+                # print(f'Back received from server:\n{splitData[0]}')
+                del splitData[0]
+
+                sendToServer = self.input_sms(splitData)
+                client.send(sendToServer)
+
+
+            else:
+                print(f'Back received from server:\n{recvFromServer}')
+                break
+
+        client.close()
+
+    def input_sms(self, receive_sms):
+
+        listL = []
+        for data in receive_sms:
+            result = input(data)
+
+            listL.append(result)
+
+        mystr = '$'.join(map(str, listL))
+        goToServer = bytes(mystr, 'utf8')
+        return goToServer
+
+    def main(self):
+        obj = For_cilent()
+        Clientsms = obj.option()
+        print(type(Clientsms))
+        tcpClient = Client(Clientsms)
+        tcpClient.runClient()
+
+
+if __name__ == "__main__":
+    obj = Client('hi')
+    obj.main()
