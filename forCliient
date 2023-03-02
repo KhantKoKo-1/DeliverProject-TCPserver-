@@ -1,0 +1,30 @@
+import Mongon_DB
+
+
+class For_cilent:
+
+    def option(self):
+
+        print("press 1 : show menu")
+        print("press 2 : create account")
+        print("press 3 : Sign in account")
+        option = input("Enter option : ")
+        print(type(option))
+        return option
+
+    def sign_in_account(self):
+        pass
+
+
+
+    def test(self):
+        listl = ['122', '333', 'kaksa', 'sdasdds']
+        print(type(listl[0]))
+        print(listl)
+        data = int(listl[0])
+        print(type(data))
+        print(data)
+
+if __name__ == "__main__":
+    obj = For_cilent()
+    obj.test()
