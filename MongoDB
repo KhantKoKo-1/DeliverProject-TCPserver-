@@ -1,41 +1,46 @@
 from pymongo import MongoClient
 
+list_menu = []
+
 
 class mongodatabase:
     try:
 
         client = MongoClient('localhost', 27017)
         db = client['Delivery_database']  # or db = client.test_database
-        collection = db['shop-collection']  # or collection = db.test_collection
-        collection_1 = db['user-collection']
+        collection = db['Menu-collection']  # or collection = db.test_collection
+        collection_1 = db['shop-collection']
+        collection_2 = db['user-collection']
+
         print("connection success")
+
 
 
     except Exception as error:
         print(error)
 
     def __init__(self):
-        # data = [
-        #     {"_id": 1, "Shop Name": "Tea shop",
-        #      "food": ["sandwich-2500", "Thai soup-2200-Tea shop", "Potato Marlar-2500", "fry chicken-2200-Tea shop",
-        #               "Malasamkaw-5000-Tea shop"],
-        #      "drink": ["Tea-500-Tea shop", "Coffee-500", "LEMON Juice-500"]},
-        #     {"_id": 2, "Shop Name": "Pan Ei", "food": ["Bread-2000", "Cake-8000 ", "Fried Rice(Chicken)-3000"],
-        #      "drink": ["orange juice-1000", "Tea-500"]},
-        #     {"_id": 3, "Shop Name": "FuDo Barkery", "food": ["Burgar-2000", "Chocolate Cake-3500"],
-        #      "drink": ["AVOCADO JUICE-1500", "StawBarry JUICE-1500"]},
-        #     {"_id": 4, "Shop Name": "Shwe Lu Lu", "food": ["Shan Noodle-1500", "fired rice-2500", "Tongyang soup-2000"],
-        #      "drink": ["lemon juice =2000", "Lemon tea =800"]},
-        #     {"_id": 5, "Shop Name": "Pyae phyo", "food": ['Kimar plata-2500', 'Irak kwe-300'],
-        #      "drink": ["Silong Tea-1000", "Coffee-500"]},
-        #
-        # ]
-        data_1 = [
+        data = [
             {"_id": 1, "Menu": "Chicken", "Shop Name": ["Teashop", "PanEi"]},
             {"_id": 2, "Menu": "Sea Food", "Shop Name": ["Shwe Lu Lu", "Myat"]},
             {"_id": 3, "Menu": "Korea Food", "Shop Name": ["KPop", "K-Noodle"]},
             {"_id": 4, "Menu": "China Food", "Shop Name": ["Shwe Nay Chi", "PaPa"]},
-            {"_id": 4, "Menu": "Asia Food", "Shop Name": ["Pyae phyo", "PanEi"]},
+            {"_id": 5, "Menu": "Asia Food", "Shop Name": ["Pyae phyo", "PanEi"]},
+
+        ]
+        data_1 = [
+            {"_id": 1, "Shop Name": "Teashop",
+             "food": {"sandwich": 2500, "Thai soup": 2200, "Potato Marlar": 2500, "fry chicken": 2200,
+                      "Malasamkaw": 5000},
+             "drink": {"Tea": 500, "Coffee": 500, "LEMON Juice": 500}},
+            {"_id": 2, "Shop Name": "PanEi", "food": {"Bread": 2000, "Cake:": 8000, "Fried Rice(Chicken)": 3000},
+             "drink": {"orange juice": 1000, "Tea": 500}},
+            # {"_id": 3, "Shop Name": "FuDo Barkery", "food": {"Burgar-2000", "Chocolate Cake-3500"},
+            #  "drink": {"AVOCADO JUICE-1500", "StawBarry JUICE-1500"}},
+            # {"_id": 4, "Shop Name": "Shwe Lu Lu", "food": {"Shan Noodle-1500", "fired rice-2500", "Tongyang soup-2000"},
+            #  "drink": {"lemon juice =2000", "Lemon tea =800"}},
+            # {"_id": 5, "Shop Name": "Pyae phyo", "food": {'Kimar plata-2500', 'Irak kwe-300'},
+            #  "drink": {"Silong Tea-1000", "Coffee-500"}},
 
         ]
 
@@ -46,29 +51,87 @@ class mongodatabase:
             {'_id': 4, 'User_Name': 'Tha Zin Naing', 'Phone': '959987654321', 'Password': 'Thazin345'},
 
         ]
-        # try:
-        #      self.collection.insert_many(data_1)
-        #     # self.collection_1.insert_many(data_1)
-        #     print("insert successful")
-        # except Exception as error:
-        #     print(error)
+        try:
+            # self.collection.insert_many(data)
+            # self.collection_1.insert_many(data_1)
+            print("insert successful")
+        except Exception as error:
+            print(error)
 
     def showmenu(self):
 
         find = self.collection.find({}, {'Menu': 1, '_id': 0})
-        # find_1 = self.collection.find({}, {'food'[0]: 1})
-        # find_2 = self.collection.find_one()
-
 
         menu_str = '\n'.join(map(str, find))
-        t = '\nhelloWelcome'
-        menu_str +=t
+        t = '$Enter choice Menu : '
+        menu_str += t
         print(menu_str)
         return menu_str
 
+    def showmenu_test(self, menu):
+        # list_menu = []
+        find = self.collection.find().distinct('Menu')
+        for f_Menu in find:
+            if f_Menu == menu:
+                menu_shop = {"Menu": menu}
+                find = self.collection.find_one(menu_shop)
+
+                find2 = find.get('Shop Name')
+                print(find2)
+                print(type(find2))
+                for i in find2:
+                    menu_food = {'Shop Name': i}
+                    find_1 = self.collection_1.find_one(menu_food)
+                    find_3 = find_1.get('food')
+                    find_4 = find_1.get('drink')
+
+                    list_menu.append(i)
+                    list_menu.append(find_3)
+                    list_menu.append(find_4)
+
+        print(list_menu)
+
+        menu_str = '\n'.join(map(str, list_menu))
+        order = "$Press 1:Add To cert\nPress 2 To Remove from cert\nPress 3:Back To option\nEnter Choose:"
+        menu_str += order
+        return menu_str
+
+    def order(self):
+
+        menu_str = '\n'.join(map(str, list_menu))
+
+        order = "$You Can order Now!\nitem :$Number of item :$Shop Name :"
+        menu_str += order
+        print(menu_str)
+        return menu_str
+
+    def toCheckMenu(self, cert_item):
+        split_item = cert_item.split("$")
+        print(split_item)
+        find_shop = self.collection_1.find().distinct('Shop Name')
+        for i in find_shop:
+            print(i)
+            if i == split_item[2]:
+
+                menu_food = {'Shop Name': i}
+                find_1 = self.collection_1.find_one(menu_food)
+                find_3 = find_1.get('food')
+                print(find_3)
+                find_4 = find_1.get('drink')
+                print('T')
+                if find_3 == split_item[0]:
+                    print(True)
+                elif find_4 == split_item[0]:
+                    print('D')
+                else:
+                    print(False)
+
+            else:
+                print(False)
+
     def check_Phnumber(self, receive_data):
-        find_ph = self.collection_1.find().distinct('Phone')
-        print(find_ph)
+        find_ph = self.collection_2.find().distinct('Phone')
+        print('find ph', find_ph)
         key = '959'
         add_key = key + receive_data
         print(add_key)
@@ -80,8 +143,8 @@ class mongodatabase:
         return False
 
     def checking_password(self, phFromserver, passFromServer):
-        ph = {"Phone" : phFromserver}
-        find = self.collection_1.find_one(ph)
+        ph = {"Phone": phFromserver}
+        find = self.collection_2.find_one(ph)
         pass_1 = find.get('Password')
 
         if pass_1 == passFromServer:
@@ -90,9 +153,6 @@ class mongodatabase:
         else:
             print('false')
             return False
-
-
-
 
     def addData(self, add_list_data):
 
@@ -108,7 +168,7 @@ class mongodatabase:
         d1 = zip(list2, add_list_data)
         dic_data = dict(d1)
         print(dic_data)
-        self.collection_1.insert_one(dic_data)
+        self.collection_2.insert_one(dic_data)
         print("insert successful")
 
     def ph_count_checking(self, int_Data):
@@ -128,21 +188,24 @@ class mongodatabase:
 
     def sign_up_account(self):
 
-        user = "input$Enter UserName:$Enter Ph_Number:$Enter Password:$Enter Confirm password:"
+        user = "This is Register State$Enter UserName:$Enter Ph_Number:$Enter Password:$Enter Confirm password:"
 
         return user
 
     def sign_in_account(self):
 
-        client = "input$Enter Ph_Number$Enter Password:"
+        client = "This is LoginState$Enter Ph_Number$Enter Password:"
         return client
 
+    def user_account(self):
+        account = "Login Success$Press 1:Menu\nPress 2:Back To option:\nPress 3 setting"
+        return account
+
     def for_send_option(self):
-        option = "input$press 1 : show menu\npress 2 : create account\npress 3 : Sign in account\nEnter option : "
+        option = "press 1 : show menu\npress 2 : create account\npress 3 : Sign in account\nEnter option : "
         return option
 
 
 if __name__ == "__main__":
     obj = mongodatabase()
-    # obj.showmenu()
-
+    obj.toCheckMenu("sandwich$3$Teashop")
