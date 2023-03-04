@@ -30,6 +30,7 @@ class TCPserver():
 
         with client_socket as sock:
             while True:
+                print('add')
                 receive_data = sock.recv(1024)
 
                 data = receive_data.decode("utf-8")
@@ -41,6 +42,28 @@ class TCPserver():
                     tosend = obj.showmenu()
 
                     sock.send(tosend.encode())
+                    while True:
+                        revData = sock.recv(1024).decode('utf-8')
+                        if revData == '1':
+                            send_order = obj.order()
+                            sock.send(send_order.encode())
+                            revFromClient = sock.recv(1024).decode('utf-8')
+                            obj.toCheckMenu(revFromClient)
+
+
+
+
+                        elif revData == '2':
+                            sock.send(tosend.encode())
+                        else:
+
+                            print('showmenu Fan :', revData)
+                            sendClient = obj.showmenu_test(revData)
+                            sock.send(sendClient.encode())
+
+
+
+
 
                 elif data == '2':
 
@@ -53,6 +76,7 @@ class TCPserver():
                     split_data = r_data.split("$")
                     print(split_data)
                     key = split_data[1]
+                    send = obj.for_send_option()
 
                     try:
                         int_data = int(key)
@@ -66,8 +90,10 @@ class TCPserver():
                                 if result_pass:
 
                                     obj.addData(split_data)
-                                    send = obj.for_send_option()
-                                    sock.send(send.encode())
+                                    add_str = 'Registation Success$'
+                                    add_str += send
+                                    print(add_str)
+                                    sock.send(add_str.encode())
                                 else:
                                     print("Wrong PassWord")
 
@@ -83,7 +109,9 @@ class TCPserver():
                     except ValueError:
                         print('Wrong Ph_Number')
 
-                    sock.send(send.encode())
+                    add_str = 'Something What Wrong Pls Try again$'
+                    add_str += send
+                    sock.send(add_str.encode())
 
                 elif data == '3':
                     obj = mongodatabase()
@@ -103,9 +131,10 @@ class TCPserver():
                         dataFromMongo_1 = obj.checking_password(dataFromMongo, split_data[1])
                         print('receive pass', dataFromMongo_1)
                         if dataFromMongo_1:
-                            sendToClient = obj.showmenu()
+                            sendToClient = obj.user_account()
                             sock.send(sendToClient.encode())
-                            break
+
+
                         else:
                             print('false')
 
