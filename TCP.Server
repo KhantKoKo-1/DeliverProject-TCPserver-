@@ -27,6 +27,7 @@ class TCPserver():
             client_handler.start()
 
     def handle_client(self, client_socket):
+        listl = []
 
         with client_socket as sock:
             while True:
@@ -43,18 +44,45 @@ class TCPserver():
 
                     sock.send(tosend.encode())
                     while True:
+
+                        print('ghgh')
                         revData = sock.recv(1024).decode('utf-8')
+                        listl.append(revData)
+                        print('up', revData)
+                        print('list', listl)
+
                         if revData == '1':
                             send_order = obj.order()
                             sock.send(send_order.encode())
-                            revFromClient = sock.recv(1024).decode('utf-8')
-                            obj.toCheckMenu(revFromClient)
 
+                            revFromClient = sock.recv(1024).decode('utf-8')
+                            print('re1', revFromClient)
+                            split_item = revFromClient.split("$")
+                            return_data = obj.toCheckMenu(split_item)
+                            sendClient = obj.showmenu_test(listl[0])
+
+                            if not return_data:
+                                add_word = 'Your Order is Not Found!Try again\n'
+
+                                print(listl[0])
+                                add_word += sendClient
+                                sock.send(add_word.encode())
+                                print(revFromClient)
+
+                            else:
+                                return_list = obj.add_cert(revFromClient)
+                                print(return_list)
+                                sock.send(sendClient.encode())
 
 
 
                         elif revData == '2':
-                            sock.send(tosend.encode())
+                            sendForRemove = obj.removeCert()
+                            sock.send(sendForRemove.encode())
+
+                            revData_cert = sock.recv(1024).decode('utf-8')
+                            print('revDatacert-',revData_cert)
+
                         else:
 
                             print('showmenu Fan :', revData)
