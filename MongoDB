@@ -46,7 +46,8 @@ class mongodatabase:
         ]
 
         data_2 = [
-            {'_id': 1, 'User_Name': 'Khant Ko Ko', 'Phone': '959123456789', 'Password': 'khant123'},
+            {'_id': 1, 'User_Name': 'Khant Ko Ko', 'Phone': '959123456789', 'Password': 'khant123',
+             'Order History': []},
             {'_id': 2, 'User_Name': 'SiThu', 'Phone': '959532145671', 'Password': 'SiThu123'},
             {'_id': 3, 'User_Name': 'Aung Kaung Sett', 'Phone': '959556677889', 'Password': 'Aung123'},
             {'_id': 4, 'User_Name': 'Tha Zin Naing', 'Phone': '959987654321', 'Password': 'Thazin345'},
@@ -58,6 +59,14 @@ class mongodatabase:
         #     print("insert successful")
         # except Exception as error:
         #     print(error)
+
+    def checkMenu(self, revData):
+        find = self.collection.find().distinct('Menu')
+        for checkdata in find:
+            print(checkdata)
+            if checkdata == revData:
+                return True
+        return False
 
     def showmenu(self):
 
@@ -90,7 +99,8 @@ class mongodatabase:
                     list_shop.append(i)
         print('listshop', list_shop)
         menu_str = '\n'.join(map(str, list_menu))
-        order = "$Press 1:Add To cert\nPress 2:Remove from cert\nPress 3:Back To option\nEnter Choose:"
+        order = "$Press 1:Add To cert\nPress 2:Remove from cert\nPress 3:Order Confirm\nPress 4:Back To option\nEnter " \
+                "Choose:"
         menu_str += order
         return menu_str
 
@@ -103,8 +113,7 @@ class mongodatabase:
         return order
 
     def toCheckMenu(self, split_item):
-        # print('check',list_shop)
-        # find_shop = self.collection_1.find().distinct('Shop Name')
+
         for i in list_shop:
             print(i)
             if i == split_item[2]:
@@ -138,10 +147,113 @@ class mongodatabase:
         return list_cert
 
     def remove(self, Data):
-        cert = ['sand$3$tea', 'pain$5$panEi', 'tea$3$TeaPro']
+        # list_shop = ['sand$3$tea', 'pain$5$panEi', 'tea$3$TeaPro']
+        splitData = Data.split('$')
+        list_1 = []
+        list_2 = ['h']
 
-        print('cert', cert)
-        print('Data', Data)
+        for data_list in list_shop:
+            split_data1 = data_list.split('$')
+
+            for data in split_data1:
+
+                if data == splitData[0]:
+                    del list_2[0]
+                    list_2.append(data)
+
+                elif data == splitData[1]:
+                    list_2.append(list_1[-1])
+                    list_2.append(data)
+                    l_str = '$'.join(map(str, list_2))
+                    list_shop.remove(l_str)
+                    return True
+                else:
+                    list_1.append(data)
+
+        return False
+
+    def show_Order(self):
+
+        list_menu = []
+        list_bill = []
+        list_Total = []
+
+        for data_list in list_cert:
+            split_data1 = data_list.split('$')
+            # print('ss',split_data1)
+            list_menu.clear()
+            for data in split_data1:
+                # print('up')
+                list_menu.append(data)
+                # print(lidt)
+                for d in list_shop:
+                    # print('Test')
+                    if d == list_menu[-1]:
+                        # print(d)
+
+                        menu_food = {'Shop Name': d}
+                        find_1 = self.collection_1.find_one(menu_food)
+
+                        find_3 = find_1.get('food')
+                        # print(find_3)
+                        # print(find_3)
+                        price_food = find_3.get(list_menu[0])
+                        # print(type(price_food))
+
+                        find_4 = find_1.get('drink')
+                        price_drink = find_4.get(list_menu[0])
+
+                        # print(type(find_4))
+                        for food in find_3:
+                            if food == list_menu[0]:
+                                # print('Food', food)
+                                int_ = int(list_menu[1])
+                                Total = price_food * int_
+                                # print(Total)
+                                food += ' ' + str(price_food) + '*' + list_menu[1] + '=' + str(Total)
+                                print(food)
+                                list_Total.append(Total)
+                                list_bill.append(food)
+
+                        for drink in find_4:
+                            if drink == list_menu[0]:
+                                int_ = int(list_menu[1])
+                                Total_drink = price_drink * int_
+                                # print(Total)
+                                drink += ' ' + str(price_drink) + '*' + list_menu[1] + '=' + str(Total_drink)
+                                print(drink)
+                                list_Total.append(Total_drink)
+                                list_bill.append(drink)
+
+        Sum = sum(list_Total)
+        words_string = 'Total amount  = '
+        words_string += str(Sum)
+
+        print(words_string)
+
+        list_bill.append(words_string)
+
+        bill_str = '\n'.join(map(str, list_bill))
+        print(type(bill_str))
+
+        return bill_str
+
+    def order_print(self):
+        order = 'Press 1:Confirm\nPress 2:cancel$Enter choose'
+        return order
+
+    def order_comfirm(self):
+        showOrder = self.show_Order()
+        print(showOrder)
+        print(type(showOrder))
+        confirmKey = '$Are you sure confirm:Yes or No'
+        showOrder += confirmKey
+        return showOrder
+
+    def ForYes(self):
+        yesOption = 'Thanks Customer\nPlease Fill some information for Delivery$Enter Ph_Number :$Enter Address$Press ' \
+                    '1 :PrePaid\nPress 2:Cash on Deli\nEnter choose For PayMent Method:'
+        return yesOption
 
     def check_Phnumber(self, receive_data):
         find_ph = self.collection_2.find().distinct('Phone')
@@ -229,4 +341,6 @@ if __name__ == "__main__":
     # obj.showmenu_test('Chicken')
     # data =['Tea','3','PanEi']
     # obj.toCheckMenu(data)
-    obj.remove('tea$TeaPro')
+    # obj.remove('pain$panEi')
+    # obj.checkMenu('Chicken')
+    obj.order_comfirm()
