@@ -45,8 +45,8 @@ class TCPserver():
                     sock.send(tosend.encode())
                     while True:
 
-                        print('ghgh')
                         revData = sock.recv(1024).decode('utf-8')
+
                         listl.append(revData)
                         print('up', revData)
                         print('list', listl)
@@ -81,16 +81,58 @@ class TCPserver():
                             sock.send(sendForRemove.encode())
 
                             revData_cert = sock.recv(1024).decode('utf-8')
-                            print('revDatacert-',revData_cert)
+                            print('revDatacert-', revData_cert)
+                            return_d = obj.remove(revData_cert)
+                            if return_d:
+                                add_words = 'Remove order success\n'
+                                add_words += sendClient
+                                sock.send(add_words.encode())
+                            else:
+                                add = 'order Not Found\n'
+                                add += sendClient
+                                sock.send(add.encode())
+
+
+
+                        elif revData == '3':
+                            toSend = obj.order_print()
+                            sock.send(toSend.encode())
+                            rev_ = sock.recv(1024).decode('utf-8')
+                            if rev_ == '1':
+                                return_h = obj.order_comfirm()
+                                print(return_h)
+                                if return_h == 'Total amount  = 0$Are you sure confirm:Yes or No':
+                                    add_w = "You Haven't order yet!\n"
+                                    add_w += sendClient
+                                    sock.send(add_w.encode())
+                                else:
+                                    sock.send(return_h.encode())
+                                    revinfo = sock.recv(1024).decode('utf-8')
+                                    words = revinfo.title()
+                                    print(words)
+                                    if words == 'Yes':
+                                        ss = obj.ForYes()
+                                        sock.send(ss.encode())
+                                    else:
+                                        pass
+                            elif rev_ == '2':
+                                pass
+                            else:
+                                pass
+
+
+
 
                         else:
+                            returnForCheck = obj.checkMenu(revData)
+                            if returnForCheck:
 
-                            print('showmenu Fan :', revData)
-                            sendClient = obj.showmenu_test(revData)
-                            sock.send(sendClient.encode())
-
-
-
+                                sendClient = obj.showmenu_test(revData)
+                                sock.send(sendClient.encode())
+                            else:
+                                _add = ' Menu is Not Found!!!\n'
+                                _add += tosend
+                                sock.send(_add.encode())
 
 
                 elif data == '2':
