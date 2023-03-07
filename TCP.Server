@@ -101,6 +101,8 @@ class TCPserver():
                             if rev_ == '1':
                                 return_h = obj.order_comfirm()
                                 print(return_h)
+                                split_key = return_h.split('$')
+                                print(split_key)
                                 if return_h == 'Total amount  = 0$Are you sure confirm:Yes or No':
                                     add_w = "You Haven't order yet!\n"
                                     add_w += sendClient
@@ -113,6 +115,30 @@ class TCPserver():
                                     if words == 'Yes':
                                         ss = obj.ForYes()
                                         sock.send(ss.encode())
+                                        rev_sms = sock.recv(1024).decode('utf-8')
+                                        print(rev_sms)
+                                        s_Data = rev_sms.split('$')
+                                        print(s_Data)
+                                        print(type(s_Data))
+                                        try:
+                                            int_data = int(s_Data[0])
+                                            print(int_data)
+                                            return_Data = obj.ph_count_checking(int_data)
+                                            if return_Data:
+                                                if s_Data[2] == '1':
+                                                    print('One')
+                                                    del s_Data[2]
+                                                elif s_Data[2] == '2':
+                                                    del s_Data[2]
+                                                    obj.add_History(split_key[0], s_Data)
+                                                else:
+                                                    print('None')
+
+                                        except ValueError:
+                                            print('somthing wrong')
+
+
+
                                     else:
                                         pass
                             elif rev_ == '2':
@@ -201,7 +227,7 @@ class TCPserver():
                         dataFromMongo_1 = obj.checking_password(dataFromMongo, split_data[1])
                         print('receive pass', dataFromMongo_1)
                         if dataFromMongo_1:
-                            sendToClient = obj.user_account()
+                            sendToClient = obj.user_account(split_data[0])
                             sock.send(sendToClient.encode())
 
 
