@@ -2,6 +2,7 @@ from pymongo import MongoClient
 
 list_shop = []
 list_cert = []
+list_signin = []
 
 
 class mongodatabase:
@@ -12,6 +13,7 @@ class mongodatabase:
         collection = db['Menu-collection']  # or collection = db.test_collection
         collection_1 = db['shop-collection']
         collection_2 = db['user-collection']
+        collection_3 = db['Order-History']
 
         print("connection success")
 
@@ -47,15 +49,22 @@ class mongodatabase:
 
         data_2 = [
             {'_id': 1, 'User_Name': 'Khant Ko Ko', 'Phone': '959123456789', 'Password': 'khant123',
-             'Order History': []},
-            {'_id': 2, 'User_Name': 'SiThu', 'Phone': '959532145671', 'Password': 'SiThu123'},
-            {'_id': 3, 'User_Name': 'Aung Kaung Sett', 'Phone': '959556677889', 'Password': 'Aung123'},
-            {'_id': 4, 'User_Name': 'Tha Zin Naing', 'Phone': '959987654321', 'Password': 'Thazin345'},
+             },
+            {'_id': 2, 'User_Name': 'SiThu', 'Phone': '959532145671', 'Password': 'SiThu123',
+             },
+            {'_id': 3, 'User_Name': 'Aung Kaung Sett', 'Phone': '959556677889', 'Password': 'Aung123',
+             },
+            {'_id': 4, 'User_Name': 'Tha Zin Naing', 'Phone': '959987654321', 'Password': 'Thazin345',
+             },
 
+        ]
+        data_3 = [
+            {'_id': 1, 'Ph_Number': '959123451234', 'Address': 'YanGon DanGon Seikken', 'Order_History': ['jgdjd'],
+             'Amount': 30000}
         ]
         # try:
         #     # self.collection.insert_many(data)
-        #     self.collection_1.insert_many(data_1)
+        #     self.collection_2.insert_many(data_2)
         #     print("insert successful")
         # except Exception as error:
         #     print(error)
@@ -229,13 +238,9 @@ class mongodatabase:
         words_string = 'Total amount  = '
         words_string += str(Sum)
 
-        print(words_string)
-
         list_bill.append(words_string)
 
         bill_str = '\n'.join(map(str, list_bill))
-        print(type(bill_str))
-
         return bill_str
 
     def order_print(self):
@@ -254,6 +259,53 @@ class mongodatabase:
         yesOption = 'Thanks Customer\nPlease Fill some information for Delivery$Enter Ph_Number :$Enter Address$Press ' \
                     '1 :PrePaid\nPress 2:Cash on Deli\nEnter choose For PayMent Method:'
         return yesOption
+
+    def add_History(self, order_view, userinfo):
+        list_signin =[]
+        sign_in_ph_Data = self.check_Phnumber(list_signin[0])
+        # userinfo[-1] += order_view + '10000'
+        if not sign_in_ph_Data:
+            ph_Data = self.check_Phnumber(userinfo[0])
+
+            userinfo.append(order_view)
+            print(ph_Data)
+            var = '959'
+            data = var + userinfo[0]
+            userinfo[0] = data
+            print(userinfo[0])
+
+            if not ph_Data:
+                self.historyAddForNoAccount(userinfo)
+            else:
+                print('Two')
+                self.historyForAccountUser(order_view,userinfo[0])
+        else:
+            pass
+
+    def historyAddForNoAccount(self, userinfo):
+        history = self.client['Delivery_database']['Order-History']
+        count = history.count_documents({}) + 1
+        print(count)
+        # var = '959'
+        # data = var + userinfo[0]
+        # userinfo[0] = data
+
+        userinfo.insert(0, count)
+        list2 = ['_id', 'Ph_Number', 'Address', 'Order_History', 'Amount']
+        d1 = zip(list2, userinfo)
+        dic_data = dict(d1)
+        print(dic_data)
+        self.collection_3.insert_one(dic_data)
+        print("insert successful")
+
+    def historyForAccountUser(self, orderView, user_ph):
+
+        ph = {"Phone": user_ph}
+        find = self.collection_2.find_one(ph)
+        g = find.get('_id')
+        print(g)
+
+        self.collection_2.update_one({'_id': g}, {'$push': {"Order_History": orderView}})
 
     def check_Phnumber(self, receive_data):
         find_ph = self.collection_2.find().distinct('Phone')
@@ -319,11 +371,14 @@ class mongodatabase:
         return user
 
     def sign_in_account(self):
+        del list_signin[0]
 
         client = "This is LoginState$Enter Ph_Number$Enter Password:"
         return client
 
-    def user_account(self):
+    def user_account(self, userPh):
+        list_signin.append(userPh)
+        print(list_signin)
         account = "Login Success$Press 1:Menu\nPress 2:Back To option:\nPress 3 setting"
         return account
 
@@ -343,4 +398,5 @@ if __name__ == "__main__":
     # obj.toCheckMenu(data)
     # obj.remove('pain$panEi')
     # obj.checkMenu('Chicken')
-    obj.order_comfirm()
+    user_info = ['987654321', 'Yangon']
+    obj.add_History('BurGer =100', user_info)
