@@ -1,4 +1,4 @@
 # Nccproject1
-#remove item
-#remove Qty
+# Dleivery Feed 
 #delivery account
+#Admin Account 
