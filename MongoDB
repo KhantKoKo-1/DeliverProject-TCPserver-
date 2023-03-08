@@ -1,8 +1,9 @@
 from pymongo import MongoClient
+import time
 
 list_shop = []
 list_cert = []
-list_signin = []
+list_signin = ['hello']
 
 
 class mongodatabase:
@@ -186,6 +187,7 @@ class mongodatabase:
         list_menu = []
         list_bill = []
         list_Total = []
+        deliverFeed = 3000
 
         for data_list in list_cert:
             split_data1 = data_list.split('$')
@@ -219,7 +221,7 @@ class mongodatabase:
                                 int_ = int(list_menu[1])
                                 Total = price_food * int_
                                 # print(Total)
-                                food += ' ' + str(price_food) + '*' + list_menu[1] + '=' + str(Total)
+                                food += ' ' + str(price_food) + '*' + list_menu[1] + '=' + str(Total) + 'ks'
                                 print(food)
                                 list_Total.append(Total)
                                 list_bill.append(food)
@@ -229,7 +231,7 @@ class mongodatabase:
                                 int_ = int(list_menu[1])
                                 Total_drink = price_drink * int_
                                 # print(Total)
-                                drink += ' ' + str(price_drink) + '*' + list_menu[1] + '=' + str(Total_drink)
+                                drink += ' ' + str(price_drink) + '*' + list_menu[1] + '=' + str(Total_drink) + 'ks'
                                 print(drink)
                                 list_Total.append(Total_drink)
                                 list_bill.append(drink)
@@ -237,6 +239,8 @@ class mongodatabase:
         Sum = sum(list_Total)
         words_string = 'Total amount  = '
         words_string += str(Sum)
+        deli = 'Delivery Feed = ' + str(deliverFeed)
+        deli_Sum = Sum + deliverFeed
 
         list_bill.append(words_string)
 
@@ -260,14 +264,32 @@ class mongodatabase:
                     '1 :PrePaid\nPress 2:Cash on Deli\nEnter choose For PayMent Method:'
         return yesOption
 
+    def time_(self):
+
+        named_tuple = time.localtime()  # get struct_time
+        time_string = time.strftime("%m/%d/%Y %B, %I:%M:%S%p", named_tuple)
+
+        print(time_string)
+        return time_string
+
     def add_History(self, order_view, userinfo):
-        list_signin =[]
+
+        time_str = self.time_()
         sign_in_ph_Data = self.check_Phnumber(list_signin[0])
         # userinfo[-1] += order_view + '10000'
+        copy_order = order_view
+        split = copy_order.split('Total amount  =')
+        int_amount = int(split[1])
+        history_str = 'Ph-No:959' + userinfo[0] + '\n' + order_view + '\n' + time_str
+        print(history_str)
+        # order_view += '\n' + time_str
+        # print('time', order_view)
         if not sign_in_ph_Data:
             ph_Data = self.check_Phnumber(userinfo[0])
 
-            userinfo.append(order_view)
+            userinfo.append(history_str)
+            userinfo.append(int_amount)
+            print(userinfo)
             print(ph_Data)
             var = '959'
             data = var + userinfo[0]
@@ -275,41 +297,41 @@ class mongodatabase:
             print(userinfo[0])
 
             if not ph_Data:
+                print('one')
                 self.historyAddForNoAccount(userinfo)
             else:
                 print('Two')
-                self.historyForAccountUser(order_view,userinfo[0])
+                self.historyForAccountUser(history_str, userinfo[0], int_amount)
         else:
             pass
 
     def historyAddForNoAccount(self, userinfo):
         history = self.client['Delivery_database']['Order-History']
         count = history.count_documents({}) + 1
-        print(count)
-        # var = '959'
-        # data = var + userinfo[0]
-        # userinfo[0] = data
 
         userinfo.insert(0, count)
         list2 = ['_id', 'Ph_Number', 'Address', 'Order_History', 'Amount']
         d1 = zip(list2, userinfo)
         dic_data = dict(d1)
         print(dic_data)
+
+        print(dic_data)
+
         self.collection_3.insert_one(dic_data)
         print("insert successful")
 
-    def historyForAccountUser(self, orderView, user_ph):
+    def historyForAccountUser(self, history_str, user_ph, amount):
 
         ph = {"Phone": user_ph}
         find = self.collection_2.find_one(ph)
         g = find.get('_id')
-        print(g)
 
-        self.collection_2.update_one({'_id': g}, {'$push': {"Order_History": orderView}})
+        self.collection_2.update_one({'_id': g}, {'$push': {"Order_History": history_str}})
+        self.collection_2.update_one({'_id': g}, {'$push': {"'Amount": amount}})
 
     def check_Phnumber(self, receive_data):
         find_ph = self.collection_2.find().distinct('Phone')
-        print('find ph', find_ph)
+
         key = '959'
         add_key = key + receive_data
         print(add_key)
@@ -317,7 +339,7 @@ class mongodatabase:
             if data == add_key:
                 return data
             else:
-                print("False")
+                pass
         return False
 
     def checking_password(self, phFromserver, passFromServer):
@@ -371,12 +393,12 @@ class mongodatabase:
         return user
 
     def sign_in_account(self):
-        del list_signin[0]
 
         client = "This is LoginState$Enter Ph_Number$Enter Password:"
         return client
 
     def user_account(self, userPh):
+        del list_signin[0]
         list_signin.append(userPh)
         print(list_signin)
         account = "Login Success$Press 1:Menu\nPress 2:Back To option:\nPress 3 setting"
@@ -398,5 +420,7 @@ if __name__ == "__main__":
     # obj.toCheckMenu(data)
     # obj.remove('pain$panEi')
     # obj.checkMenu('Chicken')
-    user_info = ['987654321', 'Yangon']
-    obj.add_History('BurGer =100', user_info)
+    user_info = ['123345671', 'Yangon']
+    obj.add_History('BurGer =100 Total amount  =1000'
+                    , user_info)
+    obj.time_()
