@@ -46,12 +46,13 @@ class TCPserver():
                     while True:
 
                         revData = sock.recv(1024).decode('utf-8')
+                        data = revData.title()
 
-                        listl.append(revData)
+                        listl.append(data)
                         print('up', revData)
                         print('list', listl)
 
-                        if revData == '1':
+                        if data == '1':
                             send_order = obj.order()
                             sock.send(send_order.encode())
 
@@ -70,13 +71,13 @@ class TCPserver():
                                 print(revFromClient)
 
                             else:
-                                return_list = obj.add_cert(revFromClient)
+                                return_list = obj.add_cert(revFromClient.title())
                                 print(return_list)
                                 sock.send(sendClient.encode())
 
 
 
-                        elif revData == '2':
+                        elif data == '2':
                             sendForRemove = obj.removeCert()
                             sock.send(sendForRemove.encode())
 
@@ -94,7 +95,7 @@ class TCPserver():
 
 
 
-                        elif revData == '3':
+                        elif data == '3':
                             toSend = obj.order_print()
                             sock.send(toSend.encode())
                             rev_ = sock.recv(1024).decode('utf-8')
@@ -103,7 +104,7 @@ class TCPserver():
                                 print(return_h)
                                 split_key = return_h.split('$')
                                 print(split_key)
-                                if return_h == 'Total amount  = 0$Are you sure confirm:Yes or No':
+                                if return_h == 'Order amount  = 0$Are you sure confirm:Yes or No':
                                     add_w = "You Haven't order yet!\n"
                                     add_w += sendClient
                                     sock.send(add_w.encode())
@@ -125,12 +126,32 @@ class TCPserver():
                                             print(int_data)
                                             return_Data = obj.ph_count_checking(int_data)
                                             if return_Data:
+
                                                 if s_Data[2] == '1':
-                                                    print('One')
-                                                    del s_Data[2]
+                                                    payment = '<<<Prepaid>>>'
+                                                    prepaid = obj.prepaid()
+                                                    sock.send(prepaid.encode())
+                                                    rev = sock.recv(1024).decode('utf-8')
+                                                    words_ = rev.title()
+                                                    if words_ == 'Done':
+                                                        return_history = obj.add_History(split_key[0], s_Data, payment)
+                                                        adding_str = return_history+'\n'+'Order Confirm Successful\nThanks Customer\n'
+                                                        adding_str += sendClient
+                                                        sock.send(adding_str.encode())
+
+                                                    else:
+                                                        pass
+
                                                 elif s_Data[2] == '2':
-                                                    del s_Data[2]
-                                                    obj.add_History(split_key[0], s_Data)
+                                                    payment = '<<<Cast On Deli>>>'
+                                                    print('CastonDeli')
+                                                    record=obj.add_History(split_key[0], s_Data, payment)
+
+
+                                                    add_words = '\n\n'+record+'\n\n'+'Order Confirm Successful\nThanks Customer\n'
+                                                    add_words += sendClient
+                                                    sock.send(add_words.encode())
+
                                                 else:
                                                     print('None')
 
@@ -138,22 +159,25 @@ class TCPserver():
                                             print('somthing wrong')
 
 
-
                                     else:
                                         pass
+
                             elif rev_ == '2':
                                 pass
                             else:
                                 pass
 
+                            wrong = 'Your Order is not Confirm\n'
+                            wrong += sendClient
+                            sock.send(wrong.encode())
 
 
 
                         else:
-                            returnForCheck = obj.checkMenu(revData)
+                            returnForCheck = obj.checkMenu(data)
                             if returnForCheck:
 
-                                sendClient = obj.showmenu_test(revData)
+                                sendClient = obj.showmenu_test(data)
                                 sock.send(sendClient.encode())
                             else:
                                 _add = ' Menu is Not Found!!!\n'
@@ -222,7 +246,18 @@ class TCPserver():
                     print('receive Ph', dataFromMongo)
 
                     if not dataFromMongo:
-                        pass
+                        deli_ph = split_data[0]+'$deliAccount'
+                        print('deli_ph',deli_ph)
+                        ph_forDeli = obj.check_Phnumber(deli_ph)
+                        print(data)
+                        if not ph_forDeli:
+                            print('Deli False')
+                        else:
+                            deli_pass = split_data[1]+'$DeliPass'
+                            pass_forDeli = obj.checking_password(ph_forDeli, deli_pass)
+                            print('deli', pass_forDeli)
+
+
                     else:
                         dataFromMongo_1 = obj.checking_password(dataFromMongo, split_data[1])
                         print('receive pass', dataFromMongo_1)
@@ -230,9 +265,12 @@ class TCPserver():
                             sendToClient = obj.user_account(split_data[0])
                             sock.send(sendToClient.encode())
 
-
                         else:
                             print('false')
+                    sending = obj.for_send_option()
+                    add = 'Something What Wrong Pls Try again$'
+                    add += sending
+                    sock.send(add.encode())
 
 
 if __name__ == "__main__":
