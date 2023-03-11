@@ -4,6 +4,7 @@ import time
 list_shop = []
 list_cert = []
 list_signin = ['hello']
+order_shop = []
 
 
 class mongodatabase:
@@ -14,7 +15,8 @@ class mongodatabase:
         collection = db['Menu-collection']  # or collection = db.test_collection
         collection_1 = db['shop-collection']
         collection_2 = db['user-collection']
-        collection_3 = db['Order-History']
+        collection_3 = db['UnAccUser-Collection']
+        collection_4 = db['Delivery Account-Collection']
 
         print("connection success")
 
@@ -25,7 +27,7 @@ class mongodatabase:
 
     def __init__(self):
         data = [
-            {"_id": 1, "Menu": "Chicken", "Shop Name": ["Teashop", "PanEi"]},
+            {"_id": 1, "Menu": "Chicken", "Shop Name": ["Teashop", "Pan Ei"]},
             {"_id": 2, "Menu": "Sea Food", "Shop Name": ["Shwe Lu Lu", "Myat"]},
             {"_id": 3, "Menu": "Korea Food", "Shop Name": ["KPop", "K-Noodle"]},
             {"_id": 4, "Menu": "China Food", "Shop Name": ["Shwe Nay Chi", "PaPa"]},
@@ -36,11 +38,11 @@ class mongodatabase:
             {"_id": 1, "Shop Name": "Teashop",
              "food": {"sandwich": 2500, "Thai soup": 2200, "Potato Marlar": 2500, "fry chicken": 2200,
                       "Malasamkaw": 5000},
-             "drink": {"Tea": 500, "Coffee": 500, "LEMON Juice": 500}},
-            {"_id": 2, "Shop Name": "PanEi", "food": {"Bread": 2000, "Cake:": 8000, "Fried Rice(Chicken)": 3000},
-             "drink": {"orange juice": 1000, "Tea": 500}},
+             "drink": {"Tea": 500, "Coffee": 500, "LEMON Juice": 500}, 'Address': 'Yangon'},
+            {"_id": 2, "Shop Name": "Pan Ei", "food": {"Bread": 2000, "Cake:": 8000, "Fried Rice(Chicken)": 3000},
+             "drink": {"orange juice": 1000, "Tea": 500}, 'Address': 'PyinOoLwin'},
             {"_id": 3, "Shop Name": "FuDo Barkery", "food": {"Burgar": 2000, "Chocolate Cake": 3500},
-             "drink": {"AVOCADO JUICE": 1500, "StawBarry JUICE": 1500}},
+             "drink": {"AVOCADO JUICE": 1500, "StawBarry JUICE": 1500}, 'Address': 'Mandalay'},
             # {"_id": 4, "Shop Name": "Shwe Lu Lu", "food": {"Shan Noodle-1500", "fired rice-2500", "Tongyang soup-2000"},
             #  "drink": {"lemon juice =2000", "Lemon tea =800"}},
             # {"_id": 5, "Shop Name": "Pyae phyo", "food": {'Kimar plata-2500', 'Irak kwe-300'},
@@ -61,11 +63,17 @@ class mongodatabase:
         ]
         data_3 = [
             {'_id': 1, 'Ph_Number': '959123451234', 'Address': 'YanGon DanGon Seikken', 'Order_History': ['jgdjd'],
-             'Amount': 30000}
+             'Amount': [30000]}
+        ]
+        data_4 = [
+            {'_id': 1, 'Delivery Name': 'Sai Aung Hein', 'Phone': '959123456781',
+             'NRC-Number': '12/DaPaNa(C)062183', 'Password': 'Sai1234', 'Access Location': ['Yangon', 'Mayangon']},
+            {'_id': 2, 'Delivery Name': 'Phyo Ko', 'Phone': '959123456782',
+             'NRC-Number': '12/DaPaNa(C)062183', 'Password': 'phyo1234', 'Access Location': ['Mandalay']}
         ]
         # try:
         #     # self.collection.insert_many(data)
-        #     self.collection_2.insert_many(data_2)
+        #     self.collection_4.insert_many(data_4)
         #     print("insert successful")
         # except Exception as error:
         #     print(error)
@@ -91,7 +99,8 @@ class mongodatabase:
         list_menu = []
         find = self.collection.find().distinct('Menu')
         for f_Menu in find:
-            if f_Menu == menu:
+            upper_menu = f_Menu.upper()
+            if upper_menu == menu.upper():
                 menu_shop = {"Menu": menu}
                 find_shop = self.collection.find_one(menu_shop)
 
@@ -123,23 +132,28 @@ class mongodatabase:
         return order
 
     def toCheckMenu(self, split_item):
-
+        # list_shop = ['Teashop', 'PanEi']
         for i in list_shop:
-            print(i)
-            if i == split_item[2]:
+
+            data = i.upper()
+            if data == split_item[2].upper():
 
                 menu_food = {'Shop Name': i}
+                print('zzzz', menu_food)
                 find_1 = self.collection_1.find_one(menu_food)
                 find_3 = find_1.get('food')
                 find_4 = find_1.get('drink')
 
                 for food in find_3:
-                    if food == split_item[0]:
+
+                    upper_food = food.upper()
+                    if upper_food == split_item[0].upper():
                         print('Food', food)
                         list_shop.clear()
                         return food
                 for drink in find_4:
-                    if drink == split_item[0]:
+                    upper_drink = drink.upper()
+                    if upper_drink == split_item[0].upper():
                         list_shop.clear()
 
                         print('drink', drink)
@@ -187,23 +201,25 @@ class mongodatabase:
         list_menu = []
         list_bill = []
         list_Total = []
-        deliverFeed = 3000
 
         for data_list in list_cert:
             split_data1 = data_list.split('$')
-            # print('ss',split_data1)
+            print('ss', split_data1)
             list_menu.clear()
             for data in split_data1:
                 # print('up')
                 list_menu.append(data)
-                # print(lidt)
+
                 for d in list_shop:
                     # print('Test')
                     if d == list_menu[-1]:
                         # print(d)
 
                         menu_food = {'Shop Name': d}
+
                         find_1 = self.collection_1.find_one(menu_food)
+                        shopName = find_1.get('Shop Name')
+                        order_shop.append(shopName)
 
                         find_3 = find_1.get('food')
                         # print(find_3)
@@ -221,7 +237,8 @@ class mongodatabase:
                                 int_ = int(list_menu[1])
                                 Total = price_food * int_
                                 # print(Total)
-                                food += ' ' + str(price_food) + '*' + list_menu[1] + '=' + str(Total) + 'ks'
+                                food += ' ' + str(price_food) + '*' + list_menu[1] + '=' + str(
+                                    Total) + 'ks' + '<<<shopName-' + shopName + '>>>'
                                 print(food)
                                 list_Total.append(Total)
                                 list_bill.append(food)
@@ -231,17 +248,15 @@ class mongodatabase:
                                 int_ = int(list_menu[1])
                                 Total_drink = price_drink * int_
                                 # print(Total)
-                                drink += ' ' + str(price_drink) + '*' + list_menu[1] + '=' + str(Total_drink) + 'ks'
+                                drink += ' ' + str(price_drink) + '*' + list_menu[1] + '=' + str(
+                                    Total_drink) + 'ks' + ' ' + '<<<shopName-' + shopName + '>>>'
                                 print(drink)
                                 list_Total.append(Total_drink)
                                 list_bill.append(drink)
 
         Sum = sum(list_Total)
-        words_string = 'Total amount  = '
+        words_string = 'Order amount  = '
         words_string += str(Sum)
-        deli = 'Delivery Feed = ' + str(deliverFeed)
-        deli_Sum = Sum + deliverFeed
-
         list_bill.append(words_string)
 
         bill_str = '\n'.join(map(str, list_bill))
@@ -260,6 +275,7 @@ class mongodatabase:
         return showOrder
 
     def ForYes(self):
+
         yesOption = 'Thanks Customer\nPlease Fill some information for Delivery$Enter Ph_Number :$Enter Address$Press ' \
                     '1 :PrePaid\nPress 2:Cash on Deli\nEnter choose For PayMent Method:'
         return yesOption
@@ -267,28 +283,32 @@ class mongodatabase:
     def time_(self):
 
         named_tuple = time.localtime()  # get struct_time
-        time_string = time.strftime("%m/%d/%Y %B, %I:%M:%S%p", named_tuple)
+        time_string = time.strftime("%m/%d/%Y %B,%I:%M:%S%p", named_tuple)
 
         print(time_string)
         return time_string
 
-    def add_History(self, order_view, userinfo):
-
+    def add_History(self, order_view, userinfo, payment):
+        # list_signin = '123456789'
         time_str = self.time_()
         sign_in_ph_Data = self.check_Phnumber(list_signin[0])
         # userinfo[-1] += order_view + '10000'
         copy_order = order_view
-        split = copy_order.split('Total amount  =')
+        split = copy_order.split('Order amount  = ')
         int_amount = int(split[1])
-        history_str = 'Ph-No:959' + userinfo[0] + '\n' + order_view + '\n' + time_str
-        print(history_str)
+        deli_feed = '2500'
+        total_cash = int_amount + int(deli_feed)
+        history_str = 'Ph-No:959' + userinfo[
+            0] + '\n' + order_view + '\n' + 'Deliver Feed =' + deli_feed + '\n' + 'Total amount  =' + str(
+            total_cash) + '\n' + payment + '\n' + time_str
+
         # order_view += '\n' + time_str
         # print('time', order_view)
         if not sign_in_ph_Data:
             ph_Data = self.check_Phnumber(userinfo[0])
 
             userinfo.append(history_str)
-            userinfo.append(int_amount)
+            userinfo.append(total_cash)
             print(userinfo)
             print(ph_Data)
             var = '959'
@@ -297,57 +317,112 @@ class mongodatabase:
             print(userinfo[0])
 
             if not ph_Data:
-                print('one')
-                self.historyAddForNoAccount(userinfo)
+                return_PH = self.noAccCheckPhnumber(userinfo[0])
+                print('phbbb', return_PH)
+                if not return_PH:
+                    print('noAccount')
+                    self.historyAddForNoAccount(userinfo)
+
+                else:
+                    print('Account')
+                    self.historyForAccountUser(history_str, userinfo[0], total_cash, self.collection_3)
+
             else:
-                print('Two')
-                self.historyForAccountUser(history_str, userinfo[0], int_amount)
+
+                self.historyForAccountUser(history_str, userinfo[0], total_cash, self.collection_2)
         else:
-            pass
+            print('Signin')
+            self.historyForAccountUser(history_str, userinfo[0], total_cash, self.collection_2)
+        self.send_To_Deli(time_str, history_str, total_cash)
+        return history_str
 
     def historyAddForNoAccount(self, userinfo):
-        history = self.client['Delivery_database']['Order-History']
+        history = self.client['Delivery_database']['UnAccUser-Collection']
         count = history.count_documents({}) + 1
 
         userinfo.insert(0, count)
-        list2 = ['_id', 'Ph_Number', 'Address', 'Order_History', 'Amount']
+        list2 = ['_id', 'Phone', 'Address']
         d1 = zip(list2, userinfo)
         dic_data = dict(d1)
         print(dic_data)
 
-        print(dic_data)
-
         self.collection_3.insert_one(dic_data)
+        self.collection_3.update_one({'_id': count}, {'$push': {"Order_History": userinfo[-2]}})
+        self.collection_3.update_one({'_id': count}, {'$push': {"'Amount": userinfo[-1]}})
         print("insert successful")
 
-    def historyForAccountUser(self, history_str, user_ph, amount):
+    def historyForAccountUser(self, history_str, user_ph, amount, collection):
 
         ph = {"Phone": user_ph}
-        find = self.collection_2.find_one(ph)
+        find = collection.find_one(ph)
         g = find.get('_id')
+        print(g)
 
-        self.collection_2.update_one({'_id': g}, {'$push': {"Order_History": history_str}})
-        self.collection_2.update_one({'_id': g}, {'$push': {"'Amount": amount}})
+        collection.update_one({'_id': g}, {'$push': {"Order_History": history_str}})
+        collection.update_one({'_id': g}, {'$push': {"'Amount": amount}})
+
+    def noAccCheckPhnumber(self, receive_data):
+        find_ph = self.collection_3.find().distinct('Phone')
+
+        for data in find_ph:
+            if data == receive_data:
+                return data
+            else:
+                pass
+        return False
+
+    def send_To_Deli(self, orderTime, order, amount):
+        order_shop = ['Pan Ei', 'Teashop']
+        shop_Name = {"Shop Name": order_shop[-1]}
+        find_shop = self.collection_1.find_one(shop_Name)
+        shopAddress = find_shop.get('Address')
+
+        accessLocation = {'Access Location': shopAddress}
+        find = self.collection_4.find_one(accessLocation)
+        _id = find.get('_id')
+        print(_id)
+        print(find)
+
+        self.collection_4.update_one({'_id': _id}, {'$push': {"Order_Time": orderTime}})
+        self.collection_4.update_one({'_id': _id}, {'$push': {"Order": order}})
+        self.collection_4.update_one({'_id': _id}, {'$push': {"Amount": amount}})
+
+        print('sending .... ')
+        order_shop.clear()
 
     def check_Phnumber(self, receive_data):
-        find_ph = self.collection_2.find().distinct('Phone')
+        split = receive_data.split('$')
+        if split[-1] == 'deliAccount':
+            find_ph = self.collection_4.find().distinct('Phone')
+            print('on user', find_ph)
+        else:
+            find_ph = self.collection_2.find().distinct('Phone')
 
         key = '959'
-        add_key = key + receive_data
+        add_key = key + split[0]
         print(add_key)
         for data in find_ph:
             if data == add_key:
+                print('AdminTrue')
                 return data
             else:
                 pass
         return False
 
     def checking_password(self, phFromserver, passFromServer):
-        ph = {"Phone": phFromserver}
-        find = self.collection_2.find_one(ph)
-        pass_1 = find.get('Password')
+        split_D = passFromServer.split('$')
+        print(split_D)
+        if split_D[-1] == 'DeliPass':
+            ph = {"Phone": phFromserver}
+            find = self.collection_4.find_one(ph)
 
-        if pass_1 == passFromServer:
+        else:
+            ph = {"Phone": phFromserver}
+            find = self.collection_2.find_one(ph)
+        pass_1 = find.get('Password')
+        print(pass_1)
+
+        if pass_1 == split_D[0]:
             print('True')
             return True
         else:
@@ -412,15 +487,23 @@ class mongodatabase:
         remove_option = "----$Enter Remove item:$Enter shopName:"
         return remove_option
 
+    def prepaid(self):
+        paid = 'Dear Customer\nYou Can Transfer <<<Wave Money>>>\n<<<Kpay>>>\n<<<CB_Pay\n Number is 09975668931$Press ' \
+               'Done:For Finished :'
+        return paid
+
 
 if __name__ == "__main__":
     obj = mongodatabase()
-    # obj.showmenu_test('Chicken')
+    # obj.showmenu_test('ChicKen')
     # data =['Tea','3','PanEi']
     # obj.toCheckMenu(data)
     # obj.remove('pain$panEi')
     # obj.checkMenu('Chicken')
-    user_info = ['123345671', 'Yangon']
-    obj.add_History('BurGer =100 Total amount  =1000'
-                    , user_info)
-    obj.time_()
+    # user_info = ['123451234', 'Yangon']
+    # obj.add_History('BurGer =100 Order amount  = 100'
+    #                 , user_info,'pre')
+    # obj.time_()
+    # obj.toCheckMenu(['tea', '5', 'panEi'])
+    # obj.show_Order()
+    # obj.send_To_Deli('8:9:10','kkdfmknfkdfd',10000)
